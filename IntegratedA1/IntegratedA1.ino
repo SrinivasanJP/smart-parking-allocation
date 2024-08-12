@@ -23,8 +23,8 @@
 
 // Constants TODO: Split env constants to the separate file
 // Insert your network credentials
-#define WIFI_SSID "TATA WIFI_2.4GHz"
-#define WIFI_PASSWORD "ssss@2003"
+#define WIFI_SSID "Network_P"
+#define WIFI_PASSWORD "Srini22112003"
 // Insert Firebase project API Key
 #define API_KEY "AIzaSyAJV8hpZ-hNij0PCy6mh_6VbGBngwZqqoU"
 // Insert RTDB URLefine the RTDB URL */
