@@ -15,6 +15,7 @@ import { auth } from './config/firebase.js'
     }
   })
   const checkBasics = async() =>{
+    console.log("checking");
     const docRef = doc(db, "user", auth?.currentUser?.uid);
     const docs = await getDoc(docRef);
     if(docs.exists()){

@@ -1,3 +1,49 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+#root{
+    margin: 0;
+    padding:0;
+    position:absolute;
+    min-width: 100vw;
+    overflow: hidden;
+}
+@layer components{
+    
+    .sidebar-icon{
+        @apply relative flex items-center justify-center h-10 md:h-12 md:w-12 w-10 p-2 mt-2 mb-2 mx-auto shadow-lg bg-gray-800 
+        rounded-3xl hover:rounded-xl transition-all duration-300 ease-linear text-green-500
+        hover:bg-green-600 hover:text-white
+        cursor-pointer
+    }
+    .wide-sidebar-icon{
+        @apply relative flex items-center justify-center h-10 w-[10em] p-2 mt-2 mb-2 mx-auto shadow-lg bg-gray-800 
+        rounded-3xl hover:rounded-xl transition-all duration-300 ease-linear text-green-500
+        hover:bg-green-600 hover:text-white
+        cursor-pointer
+    }
+    .wide-sidebar-tooltip{
+        @apply w-[60%] ml-5
+        text-white
+        text-xs font-bold
+        transition-all duration-200 origin-left
+    }
+    .sidebar-tooltip {
+        @apply absolute w-auto p-2 m-2 min-w-max left-14
+        shadow-sm rounded-[8px]
+        bg-gray-900
+        text-white
+        text-xs font-bold
+        transition-all duration-200 scale-0 origin-left
+    }
+    html{
+        /* @apply  md:bg-gray-950 */
+        @apply bg-[#0c1015] overflow-x-hidden min-h-screen
+    }
+    td,th{
+        @apply border-b-2 p-2 border-gray-500
+    }
+}
