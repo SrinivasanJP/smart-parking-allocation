@@ -2,15 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { auth, db } from '../../config/firebase'
 import SideBar from '../SideBar'
 import Dashboard from '../fragments/Dashboard'
-import Courses from '../fragments/Courses'
-import Profile from '../fragments/Profile'
-import PerformanceST from '../fragments/PerformanceST'
 import { doc, getDoc } from 'firebase/firestore'
-import CourseViewPage from '../fragments/CourseViewPage'
-import PerformanceTracker from '../fragments/PerformanceTracker'
-
-
-
 function MainPage( {setPage}) {
     const [fragment,setFragment] = useState(["dashboard"]);
     const [wideBar, setWideBar] = useState(false);
@@ -64,8 +56,7 @@ function MainPage( {setPage}) {
       };
   return (
     <div>
-        <SideBar  wideBar ={wideBar} setWideBar={setWideBar}  setFragment={setFragment} />
-        {renderFragment()}
+        <Dashboard wideBar={wideBar} setFragment={setFragment}/>;
     </div>
   )
 }
