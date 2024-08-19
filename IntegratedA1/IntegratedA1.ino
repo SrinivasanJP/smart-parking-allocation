@@ -41,7 +41,11 @@ String currentCard;
 SevSeg sevseg; //Initiate a seven segment controller object
 Servo myservo;  // create servo object to control a servo
 
-
+struct slot{
+  int id;
+  int UID_User;
+  bool isReserved;
+}typedef s;
 
  
 int swevo_pos = 0;
