@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { auth, db } from '../../config/firebase'
 import SideBar from '../SideBar'
-import Dashboard from '../fragments/Dashboard'
 import { doc, getDoc } from 'firebase/firestore'
 function MainPage( {setPage}) {
     
