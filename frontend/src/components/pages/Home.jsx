@@ -1,16 +1,19 @@
 import React from 'react';
 import Navigation from '../Navigation';
-import bg_main from "http://localhost:5173/bg_main.jpg";
+import BGImg from "../../assets/bg_main.jpg"
 
 const Home = ({ setPage }) => {
-  console.log(bg_main);
   
   return (
     <div
       id="home"
-      className="mt-[66px] bg-[url('../../assets/bg_main.jpg')]"
+      className="mt-[66px] w-screen h-screen"
     >
+      <img src={BGImg} alt="bg  image" className=' top-0 right-0 h-screen fixed' />
       <Navigation setPage={setPage} />
+      <p>
+        
+      </p>
     </div>
   );
 };
