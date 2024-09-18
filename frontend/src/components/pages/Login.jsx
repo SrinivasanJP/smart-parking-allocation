@@ -4,6 +4,7 @@ import {BsFillShieldLockFill} from 'react-icons/bs'
 import LoginSVG from './../../assets/Auth/Login-amico.svg'
 import { auth } from './../../config/firebase'
 import { signInWithEmailAndPassword} from 'firebase/auth'
+import Navigation from '../Navigation';
 import { db } from './../../config/firebase'
 import {doc, getDoc} from "firebase/firestore"
 function Login({setPage, checkBasics}) {
@@ -52,7 +53,7 @@ function Login({setPage, checkBasics}) {
 
   return (
     <div className=" bg-[#0c1015] h-screen  flex justify-center items-center">
-
+       <Navigation setPage={setPage} />
       <div className=" backdrop-blur-sm shadow-inner w-[90%] shadow-gray-400  rounded-2xl flex flex-wrap md:p-10 p-2 ">
         <img src={LoginSVG} alt="Login Svg" className="w-1/2 p-5 hidden md:block" />
         <div className="w-full md:w-1/2 p-5 flex flex-col justify-center">
