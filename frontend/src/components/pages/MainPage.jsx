@@ -9,14 +9,36 @@ function MainPage( {setPage}) {
     const [uID, setUID] = useState("");
     const [userData, setUserData] = useState({})
     const [slotData, setSlotData] = useState();
+    const SlotElement = ({data}) =>(
+      <div className={`w-20 bg-gradient-to-bl h-36 flex justify-center items-center rounded-lg from-green-400/90 flex-col to-transparent ${data.isReserved && " from-red-500"}`}>
+        {console.log(data)}
+            <h1>{data.id.toUpperCase()}</h1>
+            {data.isReserved && <p>Reserved</p>}
+          </div>
+    )
+    const fixJSON = (str) => {
+      return str.replace(/([a-zA-Z0-9_]+):/g, '"$1":');
+    };
     useEffect(()=>{
       const RT = getDatabase();
       const RTref = ref(RT, "slots");
       onValue(RTref,(snapshot)=>{
-        if(snapshot.exists()) 
-          setSlotData(snapshot.val());
-        else 
-          console.log("No Data availble");
+        if (snapshot.exists()) {
+          const rawData = snapshot.val();
+          const parsedData = rawData.map((slotString) => {
+            try {
+              // Clean up the string and parse as JSON
+              const fixedString = fixJSON(slotString);
+              return JSON.parse(fixedString);
+            } catch (error) {
+              console.error("Error parsing JSON:", error);
+              return null;
+            }
+          }).filter(data => data !== null); // Filter out any null values if parsing fails
+          setSlotData(parsedData); // Set the parsed data
+        } else {
+          console.log("No Data available");
+        }
       })
     },[])
     // useEffect(()=>{
@@ -56,8 +78,14 @@ function MainPage( {setPage}) {
     <div className='text-white flex justify-center items-center p-5 pt-20 flex-col'>
       <Navigation setPage={setPage} loginButton={false}/>
       <section id='Slots booking' className='w-[90%] h-screen flex flex-col lg:flex-row gap-9'>
-        <div className='h-full flex-1 backdrop-blur-lg bg-gradient-to-r from-cyan-600 to-lime-300/20 p-5 rounded-lg'>
+        <div className='h-full flex-1 backdrop-blur-lg bg-gradient-to-bl from-cyan-600 to-orange-400 p-5 rounded-lg'>
           <h1>Slots</h1>
+          <div className='w-full h-full flex flex-wrap gap-5 mt-10'>
+          {
+            slotData && slotData.map((data, index)=>(<SlotElement data={data} key={index}/>))
+          }
+          </div>
+          
         </div>
         <div className='h-full flex-1 flex flex-col gap-10 '>
           <div className=' flex-1 backdrop-blur-lg bg-gradient-to-r from-cyan-600 to-lime-300/20 p-5 rounded-lg'>
