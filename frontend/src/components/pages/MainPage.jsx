@@ -35,7 +35,7 @@ function MainPage( {setPage}) {
   };
   
     const SlotElement = ({data}) =>(
-      <div className={`w-20 bg-gradient-to-bl h-36 flex justify-center items-center rounded-lg from-green-400/90 flex-col to-transparent cursor-pointer ${data.isReserved && " from-red-500 cursor-not-allowed"}` } onClick={()=>{handleSlotClick(data.id)}}>
+      <div className={`w-20 bg-gradient-to-bl h-36 flex justify-center items-center rounded-lg from-green-400/90 flex-col to-transparent cursor-pointer ${data.isReserved && " from-red-500 cursor-no-drop"}` } onClick={()=>{handleSlotClick(data.id)}}>
         {console.log(data)}
             <h1>{data.id.toUpperCase()}</h1>
             {data.isReserved && <p>Reserved</p>}
