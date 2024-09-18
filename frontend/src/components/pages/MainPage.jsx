@@ -2,11 +2,23 @@ import React, { useState, useEffect } from 'react'
 import { auth, db } from '../../config/firebase'
 import SideBar from '../SideBar'
 import { doc, getDoc } from 'firebase/firestore'
+import Navigation from '../Navigation';
+import { getDatabase,ref,onValue } from 'firebase/database';
 function MainPage( {setPage}) {
     
     const [uID, setUID] = useState("");
     const [userData, setUserData] = useState({})
-  
+    const [slotData, setSlotData] = useState();
+    useEffect(()=>{
+      const RT = getDatabase();
+      const RTref = ref(RT, "slots");
+      onValue(RTref,(snapshot)=>{
+        if(snapshot.exists()) 
+          setSlotData(snapshot.val());
+        else 
+          console.log("No Data availble");
+      })
+    },[])
     // useEffect(()=>{
     // (async()=>{
     //   try{
@@ -41,10 +53,25 @@ function MainPage( {setPage}) {
     }
     
   return (
-    <div className='text-white flex justify-center items-center p-10'>
-      <button onClick={()=>LogOut()} className='bg-gray-500 px-10 text-2xl font-bold rounded-xl py-3 '>
+    <div className='text-white flex justify-center items-center p-5 pt-20 flex-col'>
+      <Navigation setPage={setPage} loginButton={false}/>
+      <section id='Slots booking' className='w-[90%] h-screen flex flex-col lg:flex-row gap-9'>
+        <div className='h-full flex-1 backdrop-blur-lg bg-gradient-to-r from-cyan-600 to-lime-300/20 p-5 rounded-lg'>
+          <h1>Slots</h1>
+        </div>
+        <div className='h-full flex-1 flex flex-col gap-10 '>
+          <div className=' flex-1 backdrop-blur-lg bg-gradient-to-r from-cyan-600 to-lime-300/20 p-5 rounded-lg'>
+            <h1>Active Slots</h1>
+          </div>
+          <div className='flex-1 backdrop-blur-lg bg-gradient-to-r from-cyan-600 to-lime-300/20 p-5 rounded-lg'>
+            <h1>Profile Details</h1>
+            <button onClick={()=>LogOut()} className='bg-gray-500 px-10 text-2xl font-bold rounded-xl py-3 '>
         Logout
       </button>
+          </div>
+        </div>
+      </section>
+      
     </div>
   )
 }
