@@ -3,69 +3,81 @@ import { auth, db } from '../../config/firebase'
 import SideBar from '../SideBar'
 import { doc, getDoc } from 'firebase/firestore'
 import Navigation from '../Navigation';
-import { getDatabase,ref,onValue } from 'firebase/database';
+import { getDatabase,ref,onValue,update } from 'firebase/database';
 function MainPage( {setPage}) {
     
     const [uID, setUID] = useState("");
     const [userData, setUserData] = useState({})
     const [slotData, setSlotData] = useState();
+    const handleSlotClick = async (slotId) => {
+      try {
+          // Find and update the slot in the local state
+          const updatedSlots = slotData.map(slot => {
+              if (slot.id === slotId) {
+                  const updatedSlot = { userID:uID, isReserved: !slot.isReserved };
+                  // Update the value in Firebase Realtime Database
+                  const RT = getDatabase();
+                  const slotRef = ref(RT, `slots/${slotId}`);
+                  update(slotRef, updatedSlot);
+                  updatedSlot = {id:slotId,...updatedSlot}
+                  // Return the updated slot
+                  return updatedSlot;
+              }
+              return slot;
+          });
+          setSlotData(updatedSlots);
+      } catch (error) {
+          console.error("Error updating slot:", error);
+      }
+  };
+  
     const SlotElement = ({data}) =>(
-      <div className={`w-20 bg-gradient-to-bl h-36 flex justify-center items-center rounded-lg from-green-400/90 flex-col to-transparent ${data.isReserved && " from-red-500"}`}>
+      <div className={`w-20 bg-gradient-to-bl h-36 flex justify-center items-center rounded-lg from-green-400/90 flex-col to-transparent ${data.isReserved && " from-red-500"}` } onClick={()=>{handleSlotClick(data.id)}}>
         {console.log(data)}
             <h1>{data.id.toUpperCase()}</h1>
             {data.isReserved && <p>Reserved</p>}
           </div>
     )
-    const fixJSON = (str) => {
-      return str.replace(/([a-zA-Z0-9_]+):/g, '"$1":');
-    };
     useEffect(()=>{
       const RT = getDatabase();
       const RTref = ref(RT, "slots");
       onValue(RTref,(snapshot)=>{
         if (snapshot.exists()) {
-          const rawData = snapshot.val();
-          const parsedData = rawData.map((slotString) => {
-            try {
-              // Clean up the string and parse as JSON
-              const fixedString = fixJSON(slotString);
-              return JSON.parse(fixedString);
-            } catch (error) {
-              console.error("Error parsing JSON:", error);
-              return null;
-            }
-          }).filter(data => data !== null); // Filter out any null values if parsing fails
-          setSlotData(parsedData); // Set the parsed data
+          console.log(snapshot.val());
+          var dataArray = [];
+          for(var i in snapshot.val())
+            dataArray.push({id:i,...snapshot.val()[i]});
+          setSlotData(dataArray);
         } else {
           console.log("No Data available");
         }
       })
     },[])
-    // useEffect(()=>{
-    // (async()=>{
-    //   try{
-    //   const docRef = doc(db, "user", uID);
-    //   const docSnap = await getDoc(docRef);
-    //   if(docSnap.exists()){
-    //     setUserData(docSnap.data());
-    //   }
-    //   else{
-    //     console.log("NO doc found");
-    //   }
-    // }catch(err){
-    //   console.log("UID not loaded")
-    // }
-    // })();
-    // },[uID]);
-    // useEffect(()=>{
-    //   auth.onAuthStateChanged((user) =>{
-    //     if(user){
-    //       setUID(user.uid)
-    //     }else{
-    //       console.log("Auth error")
-    //     }
-    //   })
-    // }, []);
+    useEffect(()=>{
+    (async()=>{
+      try{
+      const docRef = doc(db, "user", uID);
+      const docSnap = await getDoc(docRef);
+      if(docSnap.exists()){
+        setUserData(docSnap.data());
+      }
+      else{
+        console.log("NO doc found");
+      }
+    }catch(err){
+      console.log("UID not loaded")
+    }
+    })();
+    },[uID]);
+    useEffect(()=>{
+      auth.onAuthStateChanged((user) =>{
+        if(user){
+          setUID(user.uid)
+        }else{
+          console.log("Auth error")
+        }
+      })
+    }, []);
     const LogOut = () =>{
       auth.signOut().then(()=>{ 
         setPage("home")
