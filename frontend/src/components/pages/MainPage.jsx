@@ -14,6 +14,9 @@ function MainPage( {setPage}) {
           // Find and update the slot in the local state
           const updatedSlots = slotData.map(slot => {
               if (slot.id === slotId) {
+                if(slot.isReserved){
+                  alert("Slot is already reserved")
+                }else{
                   const updatedSlot = { userID:uID, isReserved: !slot.isReserved };
                   // Update the value in Firebase Realtime Database
                   const RT = getDatabase();
@@ -21,7 +24,7 @@ function MainPage( {setPage}) {
                   update(slotRef, updatedSlot);
                   updatedSlot = {id:slotId,...updatedSlot}
                   // Return the updated slot
-                  return updatedSlot;
+                  return updatedSlot;}
               }
               return slot;
           });
@@ -32,7 +35,7 @@ function MainPage( {setPage}) {
   };
   
     const SlotElement = ({data}) =>(
-      <div className={`w-20 bg-gradient-to-bl h-36 flex justify-center items-center rounded-lg from-green-400/90 flex-col to-transparent ${data.isReserved && " from-red-500"}` } onClick={()=>{handleSlotClick(data.id)}}>
+      <div className={`w-20 bg-gradient-to-bl h-36 flex justify-center items-center rounded-lg from-green-400/90 flex-col to-transparent cursor-pointer ${data.isReserved && " from-red-500 cursor-not-allowed"}` } onClick={()=>{handleSlotClick(data.id)}}>
         {console.log(data)}
             <h1>{data.id.toUpperCase()}</h1>
             {data.isReserved && <p>Reserved</p>}
@@ -90,7 +93,7 @@ function MainPage( {setPage}) {
     <div className='text-white flex justify-center items-center p-5 pt-20 flex-col'>
       <Navigation setPage={setPage} loginButton={false}/>
       <section id='Slots booking' className='w-[90%] h-screen flex flex-col lg:flex-row gap-9'>
-        <div className='h-full flex-1 backdrop-blur-lg bg-gradient-to-bl from-cyan-600 to-orange-400 p-5 rounded-lg'>
+        <div className='h-full flex-1 backdrop-blur-lg bg-gradient-to-br to-cyan-600 from-orange-400 p-5 rounded-lg'>
           <h1>Slots</h1>
           <div className='w-full h-full flex flex-wrap gap-5 mt-10'>
           {
@@ -105,7 +108,7 @@ function MainPage( {setPage}) {
           </div>
           <div className='flex-1 backdrop-blur-lg bg-gradient-to-r from-cyan-600 to-lime-300/20 p-5 rounded-lg'>
             <h1>Profile Details</h1>
-            <button onClick={()=>LogOut()} className='bg-gray-500 px-10 text-2xl font-bold rounded-xl py-3 '>
+            <button onClick={()=>LogOut()} className='bg-gray-500 px-10 text-2xl font-bold rounded-xl py-3  '>
         Logout
       </button>
           </div>
