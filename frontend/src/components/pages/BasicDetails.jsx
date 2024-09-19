@@ -8,16 +8,11 @@ const StudentForm = ({setPage}) => {
   const [studentDetails, setStudentDetails] = useState({
     studentName: '',
     dob:'',
+    RFID:"",
     gender: 'other',
-    nationality: 'India',
     address: '',
     phoneNumber: '',
     email: auth?.currentUser?.email,
-    schoolName: '',
-    language: '',
-    git: '',
-    edu:'',
-    about: ''
   });
   const input_box="border-b-2 w-full pl-8 p-3 mb-6  bg-stone-100 rounded-2xl shadow-sm"
 const handleSubmit = async(e)=>{
@@ -42,6 +37,7 @@ const handleSubmit = async(e)=>{
           <form className='mt-5' onSubmit={(e)=> handleSubmit(e)}>
             <label htmlFor="uname" className="absolute pt-4 pl-2"></label>
             <input type="text" name="uname" id="uname" placeholder="Enter your Fullname" required title="Username" className={input_box} onChange ={(e) => setStudentDetails({...studentDetails, studentName:e.target.value})}/>
+            <input type="text" name="RFID" id="RFID" placeholder="Enter your RFID NUID" required title="RFID" className={input_box} onChange ={(e) => setStudentDetails({...studentDetails, RFID:e.target.value})}/>
             <label htmlFor="dob">Select the date of Birth:</label>
       
             <input type="date" 
@@ -57,40 +53,7 @@ const handleSubmit = async(e)=>{
                 <option value="female">Female</option>
                 <option value="other">Other</option>
             </select>
-            <input type="text" 
-            value={"India"} 
-            name="nationality" 
-            id="nationality" 
-            placeholder="Enter your Nationality" 
-            required 
-            title="nationality" 
-            className={input_box} 
-            onChange={(e) => setStudentDetails({...studentDetails, nationality:e.target.value})}/>
-            <input type="text" 
-            name="schoolName" 
-            id="schoolName" 
-            placeholder="Enter your institution name" 
-            required 
-            title="institution" 
-            className={input_box} 
-            onChange={(e) => setStudentDetails({...studentDetails, schoolName:e.target.value})}/>
-            <input type="text" 
-            name="edu" 
-            id="edu" 
-            placeholder="Enter your Educational Background" 
-            required 
-            title="edu" 
-            className={input_box} 
-            onChange={(e) => setStudentDetails({...studentDetails, edu:e.target.value})}/>
             
-            <input type="text"  
-            name="lang" 
-            id="lang" 
-            placeholder="Preferred language" 
-            required 
-            title="lang" 
-            className={input_box} 
-            onChange={(e) => setStudentDetails({...studentDetails, language:e.target.value})}/>
             <textarea name="address" id="address" 
             className={input_box} placeholder='Enter your address' required onChange={(e)=>setStudentDetails({...studentDetails, address:e.target.value})}></textarea>
             <input type="tel" 
@@ -111,21 +74,7 @@ const handleSubmit = async(e)=>{
             required 
             title="email" 
             className={input_box} 
-            onChange={(e) => setStudentDetails({...studentDetails, email:e.target.value})}/>
-            <input type="text" 
-            name="git" 
-            id="git" 
-            placeholder="Enter your GITHub handle" 
-            title="git" 
-            className={input_box} 
-            onChange={(e) => setStudentDetails({...studentDetails, git:e.target.value})}/>
-            <textarea name="" id="" 
-            className={input_box} 
-            placeholder='Something about you'
-            onChange={(e) => setStudentDetails({...studentDetails, about:e.target.value})}></textarea>
-            
-           
-            
+            onChange={(e) => setStudentDetails({...studentDetails, email:e.target.value})}/>  
             <button className="inline-flex items-center px-4 justify-center py-2 mt-5 font-bold leading-6 text-sm shadow rounded-md text-white bg-cyan-500 min-w-[7em] transition ease-in-out duration-150">
             <svg className={pState?"animate-spin -ml-1 mr-3 h-5 w-5 text-white":"hidden"} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
