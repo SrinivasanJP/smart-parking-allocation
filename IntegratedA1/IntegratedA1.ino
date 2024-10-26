@@ -23,31 +23,31 @@
 
 // Constants TODO: Split env constants to the separate file
 // Insert your network credentials
-#define WIFI_SSID "Network_P"
-#define WIFI_PASSWORD "Srini22112003"
+#define WIFI_SSID "Mi A3"
+#define WIFI_PASSWORD "1234567890"
 // Insert Firebase project API Key
 #define API_KEY "AIzaSyAJV8hpZ-hNij0PCy6mh_6VbGBngwZqqoU"
 // Insert RTDB URLefine the RTDB URL */
-#define DATABASE_URL "https://smart-parking-allocation-default-rtdb.asia-southeast1.firebasedatabase.app/" 
+#define DATABASE_URL "https://smart-parking-allocation-default-rtdb.asia-southeast1.firebasedatabase.app/"
 //Define Firebase Data object
 FirebaseData fbdo;
 FirebaseAuth auth;
 FirebaseConfig config;
 
 MFRC522 rfid(SS_PIN, RST_PIN);
-MFRC522::MIFARE_Key key; 
+MFRC522::MIFARE_Key key;
 byte nuidPICC[4];
 String currentCard;
-SevSeg sevseg; //Initiate a seven segment controller object
+SevSeg sevseg;  //Initiate a seven segment controller object
 Servo myservo;  // create servo object to control a servo
 
-struct slot{
+struct slot {
   int id;
   int UID_User;
   bool isReserved;
-}typedef s;
+} typedef s;
 
- 
+
 int swevo_pos = 0;
 unsigned long sendDataPrevMillis = 0;
 bool signupOK = false;
@@ -55,21 +55,21 @@ std::vector<String> data;
 int currentSlot = 1000;
 bool displayNeedsUpdate = false;
 unsigned long lastRefreshTime = 0;
-void servoInit(){
-  myservo.setPeriodHertz(50);    // standard 50 hz servo
-	myservo.attach(SERVO_PIN, 500, 2400);
+void servoInit() {
+  myservo.setPeriodHertz(50);  // standard 50 hz servo
+  myservo.attach(SERVO_PIN, 500, 2400);
 }
-void SevSegInit(){
-  byte numDigits = 4;  
-    byte digitPins[] = {5, 15, 2, 4};
-    byte segmentPins[] = {27,32,14,33,25,13,12};
-    bool resistorsOnSegments = 0; 
-    // variable above indicates that 4 resistors were placed on the digit pins.
-    // set variable to 1 if you want to use 8 resistors on the segment pins.
-    sevseg.begin(COMMON_CATHODE, numDigits, digitPins, segmentPins, resistorsOnSegments);
-    sevseg.setBrightness(90);
+void SevSegInit() {
+  byte numDigits = 4;
+  byte digitPins[] = { 5, 15, 2, 4 };
+  byte segmentPins[] = { 27, 32, 14, 33, 25, 13, 12 };
+  bool resistorsOnSegments = 0;
+  // variable above indicates that 4 resistors were placed on the digit pins.
+  // set variable to 1 if you want to use 8 resistors on the segment pins.
+  sevseg.begin(COMMON_CATHODE, numDigits, digitPins, segmentPins, resistorsOnSegments);
+  sevseg.setBrightness(90);
 }
-void wifiInit(){
+void wifiInit() {
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to Wi-Fi: ");
   Serial.println(WIFI_SSID);
@@ -80,19 +80,19 @@ void wifiInit(){
     Serial.print(".");
     delay(500);
     retryCount++;
-    if (retryCount >= 20) { // Adjust retry count if needed
+    if (retryCount >= 20) {  // Adjust retry count if needed
       Serial.println();
       Serial.println("Failed to connect to Wi-Fi. Restarting...");
-      ESP.restart(); // Restart ESP32 if Wi-Fi connection fails
+      ESP.restart();  // Restart ESP32 if Wi-Fi connection fails
     }
   }
-  
+
   Serial.println();
   Serial.print("Connected to Wi-Fi with IP: ");
   Serial.println(WiFi.localIP());
   Serial.println();
 }
-void firebaseInit(){
+void firebaseInit() {
   Serial.println("Firebase Connection Starts...");
 
   /* Assign the api key (required) */
@@ -102,24 +102,23 @@ void firebaseInit(){
   config.database_url = DATABASE_URL;
 
   /* Sign up */
-  if (Firebase.signUp(&config, &auth, "test@gmail.com", "1234567")){
+  if (Firebase.signUp(&config, &auth,"test12345@gmail.com", "1234567")) {
     Serial.println("ok");
     signupOK = true;
-  }
-  else{
+  } else {
     Serial.printf("%s\n", config.signer.signupError.message.c_str());
   }
 
   /* Assign the callback function for the long running token generation task */
-  config.token_status_callback = tokenStatusCallback; //see addons/TokenHelper.h
-  
+  config.token_status_callback = tokenStatusCallback;  //see addons/TokenHelper.h
+
   Firebase.begin(&config, &auth);
   Firebase.reconnectWiFi(true);
 }
-void MFRC522Init(){
-  SPI.begin(); // Init SPI bus
-  rfid.PCD_Init(); // Init MFRC522 
-   for (byte i = 0; i < 6; i++) {
+void MFRC522Init() {
+  SPI.begin();      // Init SPI bus
+  rfid.PCD_Init();  // Init MFRC522
+  for (byte i = 0; i < 6; i++) {
     key.keyByte[i] = 0xFF;
   }
 
@@ -132,24 +131,22 @@ void MFRC522Init(){
 
 std::vector<String> getSlotsFromCloud() {
     std::vector<String> dataArray;
-    FirebaseJsonArray jsonArray;
-    FirebaseJsonData jsonData;
-
-    if (Firebase.RTDB.getArray(&fbdo, "slots/array", &jsonArray)) {
-        Serial.println("Data retrieved successfully:");
-
-        for (size_t i = 0; i < jsonArray.size(); i++) {
-            jsonArray.get(jsonData, i);
-            if (jsonData.typeNum == FirebaseJson::JSON_STRING) {
-                String value = jsonData.stringValue;
-                dataArray.push_back(value);
-                Serial.println("Value at index " + String(i) + ": " + value);
-            }
+    for(int i=0;i<3;i++){
+    if (Firebase.RTDB.getBool(&fbdo, "slots/s"+String(i)+"/isReserved")) {
+        if(fbdo.boolData()){
+        if (Firebase.RTDB.getString(&fbdo, "slots/s"+String(i)+"/userID")) {
+          dataArray.push_back(fbdo.stringData());
+        }else{
+          Serial.println("Failed to retrieve data");
+          Serial.println("Reason: " + fbdo.errorReason());
+        }
+        }else{
+          dataArray.push_back("");
         }
     } else {
         Serial.println("Failed to retrieve data");
         Serial.println("Reason: " + fbdo.errorReason());
-    }
+    }}
 
     return dataArray;
 
@@ -158,12 +155,12 @@ std::vector<String> getSlotsFromCloud() {
 
 void setup() {
   Serial.begin(115200);
+  randomSeed(analogRead(0));
   wifiInit();
   firebaseInit();
   MFRC522Init();
   SevSegInit();
   servoInit();
-
 }
 void printDec(byte *buffer, byte bufferSize) {
   for (byte i = 0; i < bufferSize; i++) {
@@ -172,99 +169,92 @@ void printDec(byte *buffer, byte bufferSize) {
     currentCard += String(buffer[i]);  // Convert byte to String and append to currentCard
   }
 }
-bool checkCards(){
+bool checkCards() {
   currentSlot = 1000;
-  for(int i=0; i<data.size();i++){
-          
-          String trimmedCard = currentCard;
-          String trimmedData = data[i];
+  for (int i = 0; i < data.size(); i++) {
 
-          trimmedCard.trim();
-          trimmedData.trim();
-          Serial.println("Comparing with: " + trimmedData +" == "+trimmedCard);
-          if(trimmedCard == trimmedData){
-              currentSlot += i;
-              return true;
+    String trimmedCard = currentCard;
+    String trimmedData = data[i];
 
-          } 
-        }
-    return false;
+    trimmedCard.trim();
+    trimmedData.trim();
+    Serial.println("Comparing with: " + trimmedData + " == " + trimmedCard);
+    if (trimmedCard == trimmedData) {
+      currentSlot += i;
+      return true;
+    }
+  }
+  return false;
 }
 
 void loop() {
-  
+
   // Retrieve data from Firebase if ready and required
-    if (Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 15000 || sendDataPrevMillis == 0)) {
-        sendDataPrevMillis = millis();
-        data = getSlotsFromCloud();
-    }
+  if (Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 15000 || sendDataPrevMillis == 0)) {
+    sendDataPrevMillis = millis();
+    data = getSlotsFromCloud();
+  }
 
-    if (!data.empty()) {
-        if (rfid.PICC_IsNewCardPresent()) {
-            if (rfid.PICC_ReadCardSerial()) {
-                Serial.print(F("PICC type: "));
-                MFRC522::PICC_Type piccType = rfid.PICC_GetType(rfid.uid.sak);
-                Serial.println(rfid.PICC_GetTypeName(piccType));
+  if (!data.empty()) {
+    if (rfid.PICC_IsNewCardPresent()) {
+      if (rfid.PICC_ReadCardSerial()) {
+        Serial.print(F("PICC type: "));
+        MFRC522::PICC_Type piccType = rfid.PICC_GetType(rfid.uid.sak);
+        Serial.println(rfid.PICC_GetTypeName(piccType));
 
-                if (piccType != MFRC522::PICC_TYPE_MIFARE_MINI &&  
-                    piccType != MFRC522::PICC_TYPE_MIFARE_1K &&
-                    piccType != MFRC522::PICC_TYPE_MIFARE_4K) {
-                    Serial.println(F("Your tag is not of type MIFARE Classic."));
-                    return;
-                }
+        if (piccType != MFRC522::PICC_TYPE_MIFARE_MINI && piccType != MFRC522::PICC_TYPE_MIFARE_1K && piccType != MFRC522::PICC_TYPE_MIFARE_4K) {
+          Serial.println(F("Your tag is not of type MIFARE Classic."));
+          return;
+        }
 
-                if (rfid.uid.uidByte[0] != nuidPICC[0] || 
-                    rfid.uid.uidByte[1] != nuidPICC[1] || 
-                    rfid.uid.uidByte[2] != nuidPICC[2] || 
-                    rfid.uid.uidByte[3] != nuidPICC[3] ) {
-                    Serial.println(F("A new card has been detected."));
+        if (rfid.uid.uidByte[0] != nuidPICC[0] || rfid.uid.uidByte[1] != nuidPICC[1] || rfid.uid.uidByte[2] != nuidPICC[2] || rfid.uid.uidByte[3] != nuidPICC[3]) {
+          Serial.println(F("A new card has been detected."));
 
-                    for (byte i = 0; i < 4; i++) {
-                        nuidPICC[i] = rfid.uid.uidByte[i];
-                    }
-                    currentCard = "";
-                    Serial.println(F("The NUID tag is:"));
-                    Serial.print(F("In dec: "));
-                    printDec(rfid.uid.uidByte, rfid.uid.size);
-                    Serial.println();
+          for (byte i = 0; i < 4; i++) {
+            nuidPICC[i] = rfid.uid.uidByte[i];
+          }
+          currentCard = "";
+          Serial.println(F("The NUID tag is:"));
+          Serial.print(F("In dec: "));
+          printDec(rfid.uid.uidByte, rfid.uid.size);
+          Serial.println();
 
-                    if (checkCards()) {
-                        sevseg.setNumber(currentSlot);
-                        displayNeedsUpdate = true; // Set flag to keep the display updated
-                        for (swevo_pos = 0; swevo_pos <= 90; swevo_pos += 1) { // goes from 0 degrees to 180 degrees
-                          // in steps of 1 degree
-                          sevseg.refreshDisplay();
-                          myservo.write(swevo_pos);    // tell servo to go to position in variable 'pos'
-                          delay(5);             // waits 15ms for the servo to reach the position
-                        }
-                        for(int i=0;i<5000;i++){
-                          sevseg.refreshDisplay();
-                          delay(1);
-                        }
-                        for(swevo_pos = 90;swevo_pos>=0;swevo_pos-=1){
-                          sevseg.refreshDisplay();
-                          myservo.write(swevo_pos);
-                          delay(5);
-                        }
-                    }else{
-                      displayNeedsUpdate =false;
-                    }
-                }
-                else {
-                    Serial.println(F("Card read previously."));
-                }
-
-                rfid.PICC_HaltA();
-                rfid.PCD_StopCrypto1();
+          if (checkCards()) {
+            sevseg.setNumber(currentSlot);
+            displayNeedsUpdate = true;                              // Set flag to keep the display updated
+            for (swevo_pos = 0; swevo_pos <= 90; swevo_pos += 1) {  // goes from 0 degrees to 180 degrees
+              // in steps of 1 degree
+              sevseg.refreshDisplay();
+              myservo.write(swevo_pos);  // tell servo to go to position in variable 'pos'
+              delay(5);                  // waits 15ms for the servo to reach the position
             }
+            for (int i = 0; i < 5000; i++) {
+              sevseg.refreshDisplay();
+              delay(1);
+            }
+            for (swevo_pos = 90; swevo_pos >= 0; swevo_pos -= 1) {
+              sevseg.refreshDisplay();
+              myservo.write(swevo_pos);
+              delay(5);
+            }
+          } else {
+            displayNeedsUpdate = false;
+          }
+        } else {
+          Serial.println(F("Card read previously."));
         }
 
-        // Continuously refresh the display with the currentSlot value
-         if (displayNeedsUpdate) {  // Refresh every 5ms
-         for(int i=0;i<500;i++){
-            sevseg.refreshDisplay();
-          delay(1);
-        }
-        }
+        rfid.PICC_HaltA();
+        rfid.PCD_StopCrypto1();
+      }
     }
+
+    // Continuously refresh the display with the currentSlot value
+    if (displayNeedsUpdate) {  // Refresh every 5ms
+      for (int i = 0; i < 500; i++) {
+        sevseg.refreshDisplay();
+        delay(1);
+      }
+    }
+  }
 }
