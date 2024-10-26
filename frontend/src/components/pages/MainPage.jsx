@@ -17,7 +17,7 @@ function MainPage( {setPage}) {
                 if(slot.isReserved){
                   alert("Slot is already reserved")
                 }else{
-                  const updatedSlot = { userID:uID, isReserved: !slot.isReserved };
+                  const updatedSlot = { userID:userData.RFID, isReserved: !slot.isReserved };
                   // Update the value in Firebase Realtime Database
                   const RT = getDatabase();
                   const slotRef = ref(RT, `slots/${slotId}`);
