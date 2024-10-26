@@ -17,7 +17,7 @@ function MainPage( {setPage}) {
                 if(slot.isReserved){
                   alert("Slot is already reserved")
                 }else{
-                  const updatedSlot = { userID:userData.RFID, isReserved: !slot.isReserved };
+                  var updatedSlot = { userID:userData.RFID, isReserved: !slot.isReserved };
                   // Update the value in Firebase Realtime Database
                   const RT = getDatabase();
                   const slotRef = ref(RT, `slots/${slotId}`);
@@ -106,9 +106,44 @@ function MainPage( {setPage}) {
           <div className=' flex-1 backdrop-blur-lg bg-gradient-to-r from-cyan-600 to-lime-300/20 p-5 rounded-lg'>
             <h1>Active Slots</h1>
           </div>
-          <div className='flex-1 backdrop-blur-lg bg-gradient-to-r from-cyan-600 to-lime-300/20 p-5 rounded-lg'>
-            <h1>Profile Details</h1>
-            <button onClick={()=>LogOut()} className='bg-gray-500 px-10 text-2xl font-bold rounded-xl py-3  '>
+          <div className='flex-1 backdrop-blur-lg bg-gradient-to-r from-cyan-600/20 to-lime-300/10 p-5 rounded-lg flex flex-col shadow-md shadow-white'>
+            <h1 className='text-3xl font-bold'>Profile Details</h1>
+            <table className='min-w-full mt-5 h-full'>
+    
+                <tbody>
+                <tr>
+                        <td className='border-b border-gray-200 py-2'>Student Name</td>
+                        <td className='border-b border-gray-200 py-2'>{userData.studentName}</td>
+                    </tr>
+                    <tr>
+                        <td className='border-b border-gray-200 py-2'>RFID</td>
+                        <td className='border-b border-gray-200 py-2'>{userData.RFID}</td>
+                    </tr>
+                    <tr>
+                        <td className='border-b border-gray-200 py-2'>Email</td>
+                        <td className='border-b border-gray-200 py-2'>{userData.email}</td>
+                    </tr>
+                    <tr>
+                        <td className='border-b border-gray-200 py-2'>Address</td>
+                        <td className='border-b border-gray-200 py-2'>{userData.address}</td>
+                    </tr>
+                    <tr>
+                        <td className='border-b border-gray-200 py-2'>Date of Birth</td>
+                        <td className='border-b border-gray-200 py-2'>{userData.dob}</td>
+                    </tr>
+
+                    <tr>
+                        <td className='border-b border-gray-200 py-2'>Gender</td>
+                        <td className='border-b border-gray-200 py-2'>{userData.gender}</td>
+                    </tr>
+                    <tr>
+                        <td className='border-b border-gray-200 py-2'>Phone Number</td>
+                        <td className='border-b border-gray-200 py-2'>{userData.phoneNumber}</td>
+                    </tr>
+                   
+                </tbody>
+            </table>
+            <button onClick={()=>LogOut()} className=' border-white mt-5 border-2 px-10 text-2xl font-bold rounded-xl py-3  '>
         Logout
       </button>
           </div>
