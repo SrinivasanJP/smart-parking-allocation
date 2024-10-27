@@ -59,6 +59,11 @@ void servoInit() {
   myservo.setPeriodHertz(50);  // standard 50 hz servo
   myservo.attach(SERVO_PIN, 500, 2400);
 }
+
+// Task handles for FreeRTOS tasks
+TaskHandle_t dataRetrievalTaskHandle = NULL;
+TaskHandle_t cardDetectionTaskHandle = NULL;
+
 void SevSegInit() {
   byte numDigits = 4;
   byte digitPins[] = { 5, 15, 2, 4 };
@@ -113,7 +118,7 @@ void firebaseInit() {
   config.token_status_callback = tokenStatusCallback;  //see addons/TokenHelper.h
 
   Firebase.begin(&config, &auth);
-  Firebase.reconnectWiFi(true);
+  // Firebase.reconnectWiFi(true);
 }
 void MFRC522Init() {
   SPI.begin();      // Init SPI bus
@@ -130,38 +135,25 @@ void MFRC522Init() {
 
 
 std::vector<String> getSlotsFromCloud() {
-    std::vector<String> dataArray;
-    for(int i=0;i<3;i++){
-    if (Firebase.RTDB.getBool(&fbdo, "slots/s"+String(i)+"/isReserved")) {
-        if(fbdo.boolData()){
-        if (Firebase.RTDB.getString(&fbdo, "slots/s"+String(i)+"/userID")) {
+  std::vector<String> dataArray;
+  for (int i = 0; i <= 50; i++) {
+    if (Firebase.RTDB.getString(&fbdo, "slots/s" + String(i) + "/isReserved")) {
+      if (fbdo.stringData() == "RESERVED") {
+        if (Firebase.RTDB.getString(&fbdo, "slots/s" + String(i) + "/userID")) {
           dataArray.push_back(fbdo.stringData());
-        }else{
-          Serial.println("Failed to retrieve data");
-          Serial.println("Reason: " + fbdo.errorReason());
         }
-        }else{
-          dataArray.push_back("");
-        }
+      } else {
+        dataArray.push_back("");
+      }
     } else {
-        Serial.println("Failed to retrieve data");
-        Serial.println("Reason: " + fbdo.errorReason());
-    }}
-
-    return dataArray;
-
+      Serial.println("Failed to retrieve data: " + fbdo.errorReason());
+    }
+    vTaskDelay(10 / portTICK_PERIOD_MS);  // Short delay to prevent watchdog timeout
+  }
+  return dataArray;
 }
 
 
-void setup() {
-  Serial.begin(115200);
-  randomSeed(analogRead(0));
-  wifiInit();
-  firebaseInit();
-  MFRC522Init();
-  SevSegInit();
-  servoInit();
-}
 void printDec(byte *buffer, byte bufferSize) {
   for (byte i = 0; i < bufferSize; i++) {
     Serial.print(' ');
@@ -169,6 +161,41 @@ void printDec(byte *buffer, byte bufferSize) {
     currentCard += String(buffer[i]);  // Convert byte to String and append to currentCard
   }
 }
+void updateRT(int i) {
+
+  // Attempt to retrieve the "isReserved" status
+  Serial.println("Attempting to get reservation status data for slot " + String(i));
+  
+  
+    String status = data[i];
+    Serial.println("Current status: " + status);
+
+    String update = "";
+    if (status == "RESERVED") {
+      update = "OCCUPIED";
+    } else if (status == "OCCUPIED") {
+      update = "UNRESERVED";
+    }
+
+    // Update the reservation status
+    if (Firebase.RTDB.setString(&fbdo, "slots/s" + String(i) + "/isReserved", update)) {
+      Serial.println("Status updated successfully to " + update);
+      
+      // Set the timestamp
+      String timeStamp = String(millis());
+      if (Firebase.RTDB.setString(&fbdo, "slots/s" + String(i) + "/timeStamp", timeStamp)) {
+        Serial.println("Timestamp updated successfully: " + timeStamp);
+      } else {
+        Serial.println("Failed to set timestamp data");
+        Serial.println("Reason: " + fbdo.errorReason());
+      }
+    } else {
+      Serial.println("Failed to set reserved status data");
+      Serial.println("Reason: " + fbdo.errorReason());
+    }
+}
+
+
 bool checkCards() {
   currentSlot = 1000;
   for (int i = 0; i < data.size(); i++) {
@@ -181,80 +208,74 @@ bool checkCards() {
     Serial.println("Comparing with: " + trimmedData + " == " + trimmedCard);
     if (trimmedCard == trimmedData) {
       currentSlot += i;
+      // updateRT(i);
       return true;
     }
   }
   return false;
 }
 
-void loop() {
-
-  // Retrieve data from Firebase if ready and required
-  if (Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 15000 || sendDataPrevMillis == 0)) {
-    sendDataPrevMillis = millis();
-    data = getSlotsFromCloud();
+void dataRetrievalTask(void *parameter) {
+  for (;;) {
+    if (Firebase.ready() && signupOK) {
+      data = getSlotsFromCloud();
+      Serial.println("Data retrieved successfully.");
+    }
+    vTaskDelay(500 / portTICK_PERIOD_MS);  // 500 ms delay to allow the watchdog to reset
   }
+}
 
-  if (!data.empty()) {
-    if (rfid.PICC_IsNewCardPresent()) {
-      if (rfid.PICC_ReadCardSerial()) {
-        Serial.print(F("PICC type: "));
-        MFRC522::PICC_Type piccType = rfid.PICC_GetType(rfid.uid.sak);
-        Serial.println(rfid.PICC_GetTypeName(piccType));
 
-        if (piccType != MFRC522::PICC_TYPE_MIFARE_MINI && piccType != MFRC522::PICC_TYPE_MIFARE_1K && piccType != MFRC522::PICC_TYPE_MIFARE_4K) {
-          Serial.println(F("Your tag is not of type MIFARE Classic."));
-          return;
-        }
-
-        if (rfid.uid.uidByte[0] != nuidPICC[0] || rfid.uid.uidByte[1] != nuidPICC[1] || rfid.uid.uidByte[2] != nuidPICC[2] || rfid.uid.uidByte[3] != nuidPICC[3]) {
-          Serial.println(F("A new card has been detected."));
-
-          for (byte i = 0; i < 4; i++) {
-            nuidPICC[i] = rfid.uid.uidByte[i];
-          }
-          currentCard = "";
-          Serial.println(F("The NUID tag is:"));
-          Serial.print(F("In dec: "));
-          printDec(rfid.uid.uidByte, rfid.uid.size);
-          Serial.println();
-
-          if (checkCards()) {
-            sevseg.setNumber(currentSlot);
-            displayNeedsUpdate = true;                              // Set flag to keep the display updated
-            for (swevo_pos = 0; swevo_pos <= 90; swevo_pos += 1) {  // goes from 0 degrees to 180 degrees
-              // in steps of 1 degree
-              sevseg.refreshDisplay();
-              myservo.write(swevo_pos);  // tell servo to go to position in variable 'pos'
-              delay(5);                  // waits 15ms for the servo to reach the position
-            }
-            for (int i = 0; i < 5000; i++) {
-              sevseg.refreshDisplay();
-              delay(1);
-            }
-            for (swevo_pos = 90; swevo_pos >= 0; swevo_pos -= 1) {
-              sevseg.refreshDisplay();
-              myservo.write(swevo_pos);
-              delay(5);
-            }
-          } else {
-            displayNeedsUpdate = false;
-          }
-        } else {
-          Serial.println(F("Card read previously."));
-        }
-
-        rfid.PICC_HaltA();
-        rfid.PCD_StopCrypto1();
+void cardDetectionTask(void *parameter) {
+  for (;;) {
+    if (!data.empty() && rfid.PICC_IsNewCardPresent() && rfid.PICC_ReadCardSerial()) {
+      currentCard = "";
+      for (byte i = 0; i < rfid.uid.size; i++) {
+        currentCard += String(rfid.uid.uidByte[i]);
       }
-    }
-
-    // Continuously refresh the display with the currentSlot value
-    if (displayNeedsUpdate) {  // Refresh every 5ms
-      for (int i = 0; i < 500; i++) {
-        sevseg.refreshDisplay();
-        delay(1);
+      if (checkCards()) {
+        sevseg.setNumber(currentSlot);
+        displayNeedsUpdate = true;
+        for (int pos = 0; pos <= 90; pos++) {
+          myservo.write(pos);
+          sevseg.refreshDisplay();
+          delay(5);  // This delay can be problematic
+          vTaskDelay(1 / portTICK_PERIOD_MS); // Yield here
+        }
+        delay(5000); // This delay may need to be shortened
+        for (int pos = 90; pos >= 0; pos--) {
+          myservo.write(pos);
+          sevseg.refreshDisplay();
+          delay(5);  // This delay can also be problematic
+          vTaskDelay(1 / portTICK_PERIOD_MS); // Yield here
+        }
+      } else {
+        displayNeedsUpdate = false;
       }
+      rfid.PICC_HaltA();
+      rfid.PCD_StopCrypto1();
     }
+    vTaskDelay(100 / portTICK_PERIOD_MS);  // Use vTaskDelay for non-blocking delay
+  }
+}
+
+
+void setup() {
+  Serial.begin(115200);
+  wifiInit();
+  firebaseInit();
+  MFRC522Init();
+  SevSegInit();
+  servoInit();
+
+  // Start tasks
+  xTaskCreatePinnedToCore(dataRetrievalTask, "Data Retrieval", 15000, NULL, 1, &dataRetrievalTaskHandle, 0);
+  xTaskCreatePinnedToCore(cardDetectionTask, "Card Detection", 15000, NULL, 1, &cardDetectionTaskHandle, 1);
+}
+
+void loop() {
+  if (displayNeedsUpdate) {
+    sevseg.refreshDisplay();
+    delay(5);
   }
 }
