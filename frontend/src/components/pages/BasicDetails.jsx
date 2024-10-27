@@ -13,6 +13,7 @@ const StudentForm = ({setPage}) => {
     address: '',
     phoneNumber: '',
     email: auth?.currentUser?.email,
+    slotDetails:{slot:"",status:"UNRESERVED" ,timeStamps:[]}
   });
   const input_box="border-b-2 w-full pl-8 p-3 mb-6  bg-stone-100 rounded-2xl shadow-sm"
 const handleSubmit = async(e)=>{
