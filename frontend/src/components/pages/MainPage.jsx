@@ -97,7 +97,6 @@ function MainPage( {setPage}) {
   
     const SlotElement = ({data}) =>(
       <div className={`w-20 bg-gradient-to-bl h-36 flex justify-center items-center rounded-lg from-green-400/90 flex-col to-transparent cursor-pointer ${data.isReserved=="RESERVED" && " from-red-500 cursor-no-drop"}` } onClick={()=>{handleSlotClick(data.id)}}>
-        {console.log(data)}
             <h1>{data.id.toUpperCase()}</h1>
             {data.isReserved && <p>Reserved</p>}
           </div>
@@ -107,7 +106,6 @@ function MainPage( {setPage}) {
       const RTref = ref(RT, "slots");
       onValue(RTref,(snapshot)=>{
         if (snapshot.exists()) {
-          console.log(snapshot.val());
           var dataArray = [];
           for(var i in snapshot.val())
             dataArray.push({id:i,...snapshot.val()[i]});
@@ -148,15 +146,13 @@ function MainPage( {setPage}) {
       }).catch((e)=>{
     console.log(e.messgage);
       });
-    }
-    console.log(userData);
-    
+    }    
     
   return (
     <div className='text-white flex justify-center items-center w-full flex-col py-20'>
       <Navigation setPage={setPage} loginButton={false}/>
       <section id='Slots booking' className='w-[90%] h-screen flex flex-col lg:flex-row gap-9'>
-        <div className='h-full flex-1 backdrop-blur-lg bg-gradient-to-br to-cyan-600 from-orange-400 p-5 rounded-lg overflow-y-auto'>
+        <div className=' min-h-[40em] h-full flex-1 backdrop-blur-lg bg-gradient-to-br to-cyan-600 from-orange-400 p-5 rounded-lg overflow-y-auto'>
           <h1>Slots</h1>
           <div className='w-full h-full flex flex-wrap gap-5 mt-10'>
   {
