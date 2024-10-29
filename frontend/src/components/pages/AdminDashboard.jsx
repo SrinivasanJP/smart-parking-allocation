@@ -60,9 +60,9 @@ const AdminDashboard = () => {
   return (
     <div>
       <div className="bg-cyan-200 py-3 px-10">
-        <h1 className="text-2xl font-bold text-blue-950">Admin Dashboard</h1>
+        <h1 className="text-2xl font-bold text-blue-950">Smart Parking Admin Dashboard</h1>
       </div>
-      {/* <div className=' flex justify-center flex-col items-center gap-10 my-10'>
+      <div className=' flex justify-center flex-col items-center gap-10 my-10'>
         <h1 className=' text-2xl font-bold'>User Slot reservation Monitor</h1>
         {lineChartData.timestamps.length > 0 && (
           <LineChart
@@ -149,7 +149,7 @@ const AdminDashboard = () => {
             height={400}
           />
         </div>
-      </div> */}
+      </div>
 
       <div className=' flex justify-evenly'>
         <h1 onClick={()=>{setTab("s")}} className={`${tab=='s'?" border-cyan-500 text-xl bg-cyan-300/10":""} border-b-2 w-full text-center transition-all duration-200 py-4 cursor-pointer`}>Slot Detials</h1>
