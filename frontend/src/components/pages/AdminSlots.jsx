@@ -3,19 +3,13 @@ import SlotElement from '../SlotElement';
 import { LineChart } from '@mui/x-charts';
 
 const AdminSlots = ({ slotData, userData }) => {
-    const [tab, setTab] = useState(true);
+    const [tab, setTab] = useState(false);
     const [selectedId, setSelectedId] = useState(null);
-    const [prevSelectedId, setPrevSelectedId] = useState(null);
-
     const handleSlotClick = (index) => {
         if (selectedId === index) {
-            // If clicking the same slot twice, close the tab and reset prevSelectedId
             setTab(false);
-            setPrevSelectedId(null);
             setSelectedId(null);
         } else {
-            // If selecting a new slot, update prevSelectedId and selectedId, and open the tab
-            setPrevSelectedId(selectedId);
             setSelectedId(index);
             setTab(true);
         }
@@ -44,7 +38,7 @@ const AdminSlots = ({ slotData, userData }) => {
                             />
                         ))}
             </div>
-            <div className={`transition-all duration-700 ease-in-out bg-cyan-400/10 p-10 rounded-xl ${tab ? 'min-w-[50%] translate-x-0' : 'w-0 translate-x-[50em]'}`}>
+            <div className={`transition-all duration-700 ease-in-out bg-cyan-400/10 p-10 rounded-xl h-fit ${tab ? 'min-w-[50%] relative translate-x-0' : 'absolute translate-x-[50em] right-[20em]'}`}>
                 <h1 className='text-2xl font-bold mb-10'>Slot Details</h1>
                 <table className=' w-full'>
                     <thead>
