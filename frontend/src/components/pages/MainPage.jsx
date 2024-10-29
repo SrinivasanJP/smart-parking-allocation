@@ -3,6 +3,7 @@ import { auth, db } from '../../config/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import Navigation from '../Navigation';
 import { getDatabase, ref, onValue, update, set } from 'firebase/database';
+import SlotElement from '../SlotElement';
 function MainPage({ setPage }) {
   const [uID, setUID] = useState('');
   const [userData, setUserData] = useState({});
@@ -96,17 +97,17 @@ function MainPage({ setPage }) {
     }
   };
 
-  const SlotElement = ({ data }) => (
-    <div
-      className={`w-20 bg-gradient-to-bl h-36 flex justify-center items-center rounded-lg from-green-400/90 flex-col to-transparent cursor-pointer ${data.isReserved == 'RESERVED' && ' from-red-500 cursor-no-drop'}`}
-      onClick={() => {
-        handleSlotClick(data.id);
-      }}
-    >
-      <h1>{data.id.toUpperCase()}</h1>
-      {data.isReserved && <p>Reserved</p>}
-    </div>
-  );
+  // const SlotElement = ({ data }) => (
+  //   <div
+  //     className={`w-20 bg-gradient-to-bl h-36 flex justify-center items-center rounded-lg from-green-400/90 flex-col to-transparent cursor-pointer ${data.isReserved == 'RESERVED' && ' from-red-500 cursor-no-drop'}`}
+  //     onClick={() => {
+  //       handleSlotClick(data.id);
+  //     }}
+  //   >
+  //     <h1>{data.id.toUpperCase()}</h1>
+  //     {data.isReserved && <p>Reserved</p>}
+  //   </div>
+  // );
   useEffect(() => {
     const RT = getDatabase();
     const RTref = ref(RT, 'slots');
@@ -177,7 +178,7 @@ function MainPage({ setPage }) {
                   // If one of them doesn't have a numeric part, fallback to default comparison
                   return a.id.localeCompare(b.id);
                 })
-                .map((data, index) => <SlotElement data={data} key={index} />)}
+                .map((data, index) => <SlotElement handleSlotClick={handleSlotClick} data={data} key={index} />)}
           </div>
         </div>
         <div className="h-full flex-1 flex flex-col gap-10 ">
