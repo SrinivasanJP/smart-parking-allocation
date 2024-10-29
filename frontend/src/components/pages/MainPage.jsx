@@ -159,10 +159,10 @@ function MainPage({ setPage }) {
   return (
     <div className="text-white flex justify-center items-center w-full flex-col py-20">
       <Navigation setPage={setPage} loginButton={false} />
-      <section id="Slots booking" className="w-[90%] h-screen flex flex-col lg:flex-row gap-9">
-        <div className=" min-h-[40em] h-full flex-1 backdrop-blur-lg bg-gradient-to-br to-cyan-600 from-orange-400 p-5 rounded-lg overflow-y-auto">
-          <h1>Slots</h1>
-          <div className="w-full h-full flex flex-wrap gap-5 mt-10">
+      <section id="Slots booking" className="w-[90%] flex flex-col lg:flex-row gap-9 text-black lg:h-screen overflow-auto">
+        <div className=" min-h-[40em] h-full flex-1 backdrop-blur-lg bg-gradient-to-br to-cyan-600/20 from-orange-400/30 p-5 rounded-lg overflow-y-auto">
+          <h1 className=' text-black font-bold text-3xl'>Slots</h1>
+          <div className="w-full h-full flex flex-wrap gap-5 mt-10 justify-center items-center">
             {slotData &&
               slotData
                 .sort((a, b) => {
@@ -181,9 +181,9 @@ function MainPage({ setPage }) {
                 .map((data, index) => <SlotElement handleSlotClick={handleSlotClick} data={data} key={index} />)}
           </div>
         </div>
-        <div className="h-full flex-1 flex flex-col gap-10 ">
-          <div className="flex-1 backdrop-blur-lg bg-gradient-to-r from-cyan-600/20 to-lime-300/20 p-5 rounded-lg shadow-md shadow-white">
-            <h1>Active Slots</h1>
+        <div className="flex-1 flex-wrap flex flex-col gap-10 text-black ">
+          <div className="flex-1 overflow-auto backdrop-blur-lg bg-gradient-to-r from-cyan-600/20 to-lime-300/20 p-5 rounded-lg shadow-md shadow-white">
+            <h1 className='text-3xl font-bold'>Active Slots</h1>
             <div className="flex flex-col justify-center items-center">
               <div
                 onClick={() => unReserveSlot()}
@@ -200,7 +200,7 @@ function MainPage({ setPage }) {
 
               <h2>
                 Reserved slot:{' '}
-                <span className="text-2xl font-bold text-green-300">
+                <span className="text-2xl font-bold text-green-900">
                   {userData?.slotDetails?.slot}
                 </span>
               </h2>
@@ -235,38 +235,38 @@ function MainPage({ setPage }) {
             </div>
           </div>
 
-          <div className="flex-1 backdrop-blur-lg bg-gradient-to-r from-cyan-600/20 to-lime-300/10 p-5 rounded-lg flex flex-col shadow-md shadow-white">
+          <div className="flex-1 overflow-auto backdrop-blur-lg bg-gradient-to-r from-cyan-600/20 to-lime-300/10 p-5 rounded-lg flex flex-col shadow-md shadow-white">
             <h1 className="text-3xl font-bold">Profile Details</h1>
             <table className="min-w-full mt-5 h-full">
               <tbody>
                 <tr>
-                  <td className="border-b border-gray-200 py-2">Student Name</td>
-                  <td className="border-b border-gray-200 py-2">{userData?.studentName}</td>
+                  <td className="border-b border-gray-200 p-0">Student Name</td>
+                  <td className="border-b border-gray-200 p-0">{userData?.studentName}</td>
                 </tr>
                 <tr>
-                  <td className="border-b border-gray-200 py-2">RFID</td>
-                  <td className="border-b border-gray-200 py-2">{userData.RFID}</td>
+                  <td className="border-b border-gray-200 p-0">RFID</td>
+                  <td className="border-b border-gray-200 p-0">{userData.RFID}</td>
                 </tr>
                 <tr>
-                  <td className="border-b border-gray-200 py-2">Email</td>
-                  <td className="border-b border-gray-200 py-2">{userData.email}</td>
+                  <td className="border-b border-gray-200 p-0">Email</td>
+                  <td className="border-b border-gray-200 p-0">{userData.email}</td>
                 </tr>
                 <tr>
-                  <td className="border-b border-gray-200 py-2">Address</td>
-                  <td className="border-b border-gray-200 py-2">{userData.address}</td>
+                  <td className="border-b border-gray-200 p-0">Address</td>
+                  <td className="border-b border-gray-200 p-0">{userData.address}</td>
                 </tr>
                 <tr>
-                  <td className="border-b border-gray-200 py-2">Date of Birth</td>
-                  <td className="border-b border-gray-200 py-2">{userData.dob}</td>
+                  <td className="border-b border-gray-200 p-0">Date of Birth</td>
+                  <td className="border-b border-gray-200 p-0">{userData.dob}</td>
                 </tr>
 
                 <tr>
-                  <td className="border-b border-gray-200 py-2">Gender</td>
-                  <td className="border-b border-gray-200 py-2">{userData.gender}</td>
+                  <td className="border-b border-gray-200 p-0">Gender</td>
+                  <td className="border-b border-gray-200 p-0">{userData.gender}</td>
                 </tr>
                 <tr>
-                  <td className="border-b border-gray-200 py-2">Phone Number</td>
-                  <td className="border-b border-gray-200 py-2">{userData.phoneNumber}</td>
+                  <td className="border-b border-gray-200 p-0">Phone Number</td>
+                  <td className="border-b border-gray-200 p-0">{userData.phoneNumber}</td>
                 </tr>
               </tbody>
             </table>

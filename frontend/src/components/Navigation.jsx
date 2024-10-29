@@ -3,7 +3,7 @@ import logo from '../assets/svgs/logo.png';
 
 function Navigation({ setPage, loginButton = true }) {
   return (
-    <div className="flex flex-col md:flex-row justify-between fixed w-screen max-w-screen flex-wrap text-gray-300 md:p-[1em] p-[.5em] top-0 left-0 z-50 backdrop-blur-sm ">
+    <div className=" text-black/90 flex flex-col md:flex-row justify-between fixed w-screen max-w-screen flex-wrap  md:p-[1em] p-[.5em] top-0 left-0 z-50 backdrop-blur-sm bg-gradient-to-r from-orange-200/50 to-cyan-300/20">
       <h1 className="mx-1 font-bold flex justify-center items-center md:text-2xl lg:text-3xl md:ml-5 ">
         <span className="text-orange-400 font-SpaceMono">Smart</span>Parking.
       </h1>
