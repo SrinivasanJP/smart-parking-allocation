@@ -14,7 +14,7 @@ const AdminUsers = ({userData}) => {
         }
     };
   return (
-    <div className=' flex justify-center p-10 gap-10'>
+    <div className=' flex justify-center p-10 gap-10 min-h-[40em]'>
       <table className='w-full h-fit'>
         <thead>
           <tr>
