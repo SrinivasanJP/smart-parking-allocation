@@ -58,7 +58,7 @@ function MainPage({ setPage }) {
   };
   // const addSlots =()=>{
   //   const rt = getDatabase();
-  //   for(let i=3;i<=200;i++){
+  //   for(let i=1;i<=10;i++){
   //     set(ref(rt,'slots/s'+i),{
   //       isReserved:"UNRESERVED",
   //       userID:""
