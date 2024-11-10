@@ -8,11 +8,11 @@ function MainPage({ setPage }) {
   const [uID, setUID] = useState('');
   const [userData, setUserData] = useState({});
   const [slotData, setSlotData] = useState();
-  const setSlotinUser = async (slot, status) => {
+  const setSlotinUser = async (slot, status,timeStamps) => {
     try {
       const docRef = doc(db, 'user', uID);
       let preTimeStamps = userData?.slotDetails?.timeStamps || [];
-      preTimeStamps.push({ ts: Date.now(), status: status });
+      preTimeStamps.push(timeStamps || { ts: Date.now(), status: status });
 
       // Using merge: true to avoid overwriting the whole document
       await setDoc(
@@ -35,7 +35,7 @@ function MainPage({ setPage }) {
       // Find and update the slot in the local state
       const updatedSlots = slotData.map((slot) => {
         if (slot.id === userData?.slotDetails?.slot) {
-          if (userData?.slotDetails?.status == 'RESERVED') {
+          if (userData?.slotDetails?.status == 'RESERVED' ||userData?.slotDetails?.status == 'OCCUPAID' ) {
             var updatedSlot = { userID: '', isReserved: 'UNRESERVED' };
             // Update the value in Firebase Realtime Database
             setSlotinUser(userData?.slotDetails?.slot, 'UNRESERVED');
@@ -155,6 +155,16 @@ function MainPage({ setPage }) {
         console.log(e.messgage);
       });
   };
+  useEffect(()=>{
+    const userSlots = slotData?.filter((data)=>data.userID==userData?.RFID)[0];
+    console.log(userSlots)
+    if(userSlots!=undefined){
+    if(userSlots.isReserved == "OCCUPAID"){
+    setSlotinUser(userSlots?.id,userSlots?.isReserved);
+  }else{
+    setSlotinUser(userSlots?.id,userSlots?.isReserved);
+  }}
+  },[slotData])
 
   return (
     <div className="text-white flex justify-center items-center w-full flex-col py-20">
