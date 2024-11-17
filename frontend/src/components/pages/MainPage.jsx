@@ -8,13 +8,23 @@ function MainPage({ setPage }) {
   const [uID, setUID] = useState('');
   const [userData, setUserData] = useState({});
   const [slotData, setSlotData] = useState();
-  const setSlotinUser = async (slot, status,timeStamps) => {
+  const setSlotinUser = async (slot, status, timeStamps) => {
     try {
       const docRef = doc(db, 'user', uID);
       let preTimeStamps = userData?.slotDetails?.timeStamps || [];
       preTimeStamps.push(timeStamps || { ts: Date.now(), status: status });
-
-      // Using merge: true to avoid overwriting the whole document
+  
+      // Correcting the setUserData call
+      setUserData((pre) => ({
+        ...pre,
+        slotDetails: {
+          slot: slot,
+          status: status,
+          timeStamps: preTimeStamps
+        }
+      }));
+  
+      // Using merge: true to avoid overwriting the whole document in Firestore
       await setDoc(
         docRef,
         {
@@ -30,7 +40,49 @@ function MainPage({ setPage }) {
       alert(error.message.slice(22, -2));
     }
   };
-  const unReserveSlot = () => {
+  
+  // const handleSlotClick = async (slotId) => {
+  //   try {
+  //     // Find and update the slot in the local state
+  //     const updatedSlots = slotData.map((slot) => {
+  //       if (slot.id === slotId) {
+  //         if (slot.isReserved === 'RESERVED') {
+  //           alert('Slot is already reserved');
+  //         } else {
+  //           if (userData?.slotDetails?.status === 'UNRESERVED') {
+  //             var updatedSlot = { userID: userData.RFID, isReserved: 'RESERVED' };
+  
+  //             // Update the value in Firebase Realtime Database
+  //             setSlotinUser(slotId, 'RESERVED');
+  //             const RT = getDatabase();
+  //             const slotRef = ref(RT, `slots/${slotId}`);
+  //             update(slotRef, updatedSlot);
+  
+  //             // Set a timeout to unreserve the slot after 5 minutes
+  //             setTimeout(() => {
+  //               unReserveSlot(slotId);
+  //             }, 5 * 60 * 1000); // 5 minutes in milliseconds
+  
+  //             updatedSlot = { id: slotId, ...updatedSlot };
+  //             // Return the updated slot
+  //             return updatedSlot;
+  //           } else {
+  //             alert('You already reserved a slot. Unreserve that slot to reserve a new one.');
+  //           }
+  //         }
+  //       }
+  //       return slot;
+  //     });
+  //     setSlotData(updatedSlots);
+  //   } catch (error) {
+  //     console.error('Error updating slot:', error);
+  //   }
+  // };
+  
+  // Update unReserveSlot to accept slotId as a parameter
+  const unReserveSlot = (slotId) => {
+    console.log(slotId);
+    
     try {
       // Find and update the slot in the local state
       const updatedSlots = slotData.map((slot) => {
@@ -56,6 +108,46 @@ function MainPage({ setPage }) {
       console.error('Error updating slot:', error);
     }
   };
+  const [timeLeft, setTimeLeft] = useState(null);
+
+  // Effect to initialize and update the timer
+  useEffect(() => {
+    if (userData?.slotDetails?.status === 'RESERVED') {
+      // Calculate remaining time (5 minutes from reservation timestamp)
+      const lastReservedTime = userData?.slotDetails?.timeStamps.slice(-1)[0]?.ts || Date.now();
+      const reservationEndTime = lastReservedTime + 5 * 60 * 1000;
+      const now = Date.now();
+      const initialTimeLeft = Math.max(0, reservationEndTime - now);
+
+      setTimeLeft(initialTimeLeft);
+
+      // Update the timer every second
+      const timer = setInterval(() => {
+        const newTimeLeft = reservationEndTime - Date.now();
+        if (newTimeLeft <= 0) {
+          clearInterval(timer);
+          setTimeLeft(0);
+          unReserveSlot(); // Auto unreserve the slot
+        } else {
+          setTimeLeft(newTimeLeft);
+        }
+      }, 1000);
+
+      // Cleanup timer on unmount
+      return () => clearInterval(timer);
+    } else {
+      setTimeLeft(null); // No timer if slot isn't reserved
+    }
+  }, [userData?.slotDetails?.status]);
+
+  // Format time in mm:ss
+  const formatTime = (milliseconds) => {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+  
   // const addSlots =()=>{
   //   const rt = getDatabase();
   //   for(let i=1;i<=10;i++){
@@ -155,16 +247,16 @@ function MainPage({ setPage }) {
         console.log(e.messgage);
       });
   };
-  useEffect(()=>{
-    const userSlots = slotData?.filter((data)=>data.userID==userData?.RFID)[0];
-    console.log(userSlots)
-    if(userSlots!=undefined){
-    if(userSlots.isReserved == "OCCUPAID"){
-    setSlotinUser(userSlots?.id,userSlots?.isReserved);
-  }else{
-    setSlotinUser(userSlots?.id,userSlots?.isReserved);
-  }}
-  },[slotData])
+  // useEffect(()=>{
+  //   const userSlots = slotData?.filter((data)=>data.userID==userData?.RFID)[0];
+  //   console.log(userSlots)
+  //   if(userSlots!=undefined){
+  //   if(userSlots.isReserved == "OCCUPAID"){
+  //   setSlotinUser(userSlots?.id,userSlots?.isReserved);
+  // }else{
+  //   setSlotinUser(userSlots?.id,userSlots?.isReserved);
+  // }}
+  // },[slotData])
 
   return (
     <div className="text-white flex justify-center items-center w-full flex-col py-20">
@@ -192,58 +284,65 @@ function MainPage({ setPage }) {
           </div>
         </div>
         <div className="flex-1 flex-wrap flex flex-col gap-10 text-black ">
-          <div className="flex-1 overflow-auto backdrop-blur-lg bg-gradient-to-r from-cyan-600/20 to-lime-300/20 p-5 rounded-lg shadow-md shadow-white">
-            <h1 className='text-3xl font-bold'>Active Slots</h1>
-            <div className="flex flex-col justify-center items-center">
-              <div
-                onClick={() => unReserveSlot()}
-                className={`${
-                  userData?.slotDetails?.status === 'RESERVED'
-                    ? 'border-green-200 bg-green-500'
-                    : userData?.slotDetails?.status === 'OCCUPIED'
-                      ? 'border-yellow-200 bg-yellow-500'
-                      : 'border-red-200 bg-red-500'
-                } border-black rounded-full border-4 w-40 h-40 flex justify-center items-center cursor-pointer`}
-              >
-                <h1 className="rounded-full">{userData?.slotDetails?.status}</h1>
-              </div>
+        <div className="flex-1 overflow-auto backdrop-blur-lg bg-gradient-to-r from-cyan-600/20 to-lime-300/20 p-5 rounded-lg shadow-md shadow-white">
+      <h1 className="text-3xl font-bold">Active Slots</h1>
+      <div className="flex flex-col justify-center items-center">
+        <div
+          onClick={() => unReserveSlot()}
+          className={`${
+            userData?.slotDetails?.status === 'RESERVED'
+              ? 'border-green-200 bg-green-500'
+              : userData?.slotDetails?.status === 'OCCUPIED'
+                ? 'border-yellow-200 bg-yellow-500'
+                : 'border-red-200 bg-red-500'
+          } border-black rounded-full border-4 w-40 h-40 flex justify-center items-center cursor-pointer`}
+        >
+          <h1 className="rounded-full">{userData?.slotDetails?.status}</h1>
+        </div>
 
-              <h2>
-                Reserved slot:{' '}
-                <span className="text-2xl font-bold text-green-900">
-                  {userData?.slotDetails?.slot}
-                </span>
-              </h2>
-              <table className="mt-5 w-full">
-                <thead>
-                  <tr className="border-b border-gray-300">
-                    <th className="py-2">Date</th>
-                    <th className="py-2">Time</th>
-                    <th className="py-2">Status</th>
+        <h2>
+          Reserved slot:{' '}
+          <span className="text-2xl font-bold text-green-900">
+            {userData?.slotDetails?.slot}
+          </span>
+        </h2>
+
+        {timeLeft !== null && (
+          <h3 className="mt-3 text-lg font-semibold text-red-700">
+            Time Left: {formatTime(timeLeft)}
+          </h3>
+        )}
+
+        <table className="mt-5 w-full">
+          <thead>
+            <tr className="border-b border-gray-300">
+              <th className="py-2">Date</th>
+              <th className="py-2">Time</th>
+              <th className="py-2">Status</th>
+            </tr>
+          </thead>
+        </table>
+        <div className="overflow-y-auto w-full h-60">
+          <table className="w-full">
+            <tbody>
+              {userData?.slotDetails?.timeStamps.map((data, index) => {
+                const date = new Date(data.ts);
+                const formattedDate = date.toLocaleDateString();
+                const formattedTime = date.toLocaleTimeString();
+
+                return (
+                  <tr className="border-b border-gray-200" key={index}>
+                    <td className="py-2">{formattedDate}</td>
+                    <td className="py-2">{formattedTime}</td>
+                    <td className="py-2">{data.status}</td>
                   </tr>
-                </thead>
-              </table>
-              <div className="overflow-y-auto w-full h-60">
-                <table className="w-full">
-                  <tbody>
-                    {userData?.slotDetails?.timeStamps.map((data, index) => {
-                      const date = new Date(data.ts);
-                      const formattedDate = date.toLocaleDateString();
-                      const formattedTime = date.toLocaleTimeString();
-
-                      return (
-                        <tr className="border-b border-gray-200" key={index}>
-                          <td className="py-2">{formattedDate}</td>
-                          <td className="py-2">{formattedTime}</td>
-                          <td className="py-2">{data.status}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
 
           <div className="flex-1 overflow-auto backdrop-blur-lg bg-gradient-to-r from-cyan-600/20 to-lime-300/10 p-5 rounded-lg flex flex-col shadow-md shadow-white">
             <h1 className="text-3xl font-bold">Profile Details</h1>
